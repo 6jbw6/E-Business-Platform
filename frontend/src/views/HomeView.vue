@@ -47,11 +47,10 @@
                 style="width: 100px"
               />
               <el-button type="primary" plain @click="applyFilters">筛选</el-button>
-              <el-button v-if="hasFilters" text @click="resetFilters">清空条件</el-button>
             </div>
-            <div class="toolbar-right text-muted">
-              共 {{ total }} 件商品
-              <template v-if="route.query.keyword">，关键词「{{ route.query.keyword }}」</template>
+            <div class="toolbar-right">
+              <span class="text-muted">共 {{ total }} 件商品</span>
+              <el-button v-if="hasFilters" text @click="resetFilters">清空条件</el-button>
             </div>
           </div>
         </el-card>
@@ -255,6 +254,13 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
