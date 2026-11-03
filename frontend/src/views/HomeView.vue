@@ -7,10 +7,6 @@
             <span class="card-title">商品分类</span>
           </template>
           <el-menu :default-active="activeCategoryKey" class="category-menu" @select="onSelectCategory">
-            <el-menu-item index="all">
-              <el-icon><Menu /></el-icon>
-              <span>全部商品</span>
-            </el-menu-item>
             <el-sub-menu v-for="root in categories" :key="root.id" :index="`root-${root.id}`">
               <!-- 点标题即按一级分类筛选（后端会级联其下所有二级分类），不再额外放一个「（全部）」子项 -->
               <template #title>
@@ -72,19 +68,9 @@
             <el-button size="small" type="primary" @click="load">重试</el-button>
           </el-alert>
           <el-empty v-else-if="!loading && !products.length" description="没有符合条件的商品" />
-          <el-row v-if="!loadError" :gutter="12">
-            <el-col
-              v-for="item in products"
-              :key="item.id"
-              :xs="12"
-              :sm="8"
-              :md="6"
-              :lg="4"
-              class="grid-item"
-            >
-              <ProductCard :product="item" />
-            </el-col>
-          </el-row>
+          <div v-if="!loadError" class="product-grid">
+            <ProductCard v-for="item in products" :key="item.id" :product="item" />
+          </div>
         </div>
 
         <el-pagination
@@ -105,7 +91,6 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Menu } from '@element-plus/icons-vue'
 
 import { fetchCategoryTree, fetchProducts } from '@/api/catalog'
 import ProductCard from '@/components/ProductCard.vue'
@@ -128,10 +113,9 @@ const maxPrice = ref(route.query.max_price ? Number(route.query.max_price) : und
 const page = ref(Number(route.query.page) || 1)
 const pageSize = ref(DEFAULT_PAGE_SIZE)
 
-const activeCategoryKey = computed(() => {
-  const id = route.query.category_id
-  return id ? `cat-${id}` : 'all'
-})
+const activeCategoryKey = computed(() =>
+  route.query.category_id ? `cat-${route.query.category_id}` : '',
+)
 
 const hasFilters = computed(
   () => Boolean(route.query.keyword || route.query.category_id || route.query.min_price || route.query.max_price),
@@ -177,14 +161,10 @@ async function load() {
   }
 }
 
+// 「全部商品」入口已去掉（与首页重复），清空筛选走工具栏的「清空条件」
 function onSelectCategory(index) {
-  const query = buildQuery({ page: 1 })
-  if (index === 'all') {
-    delete query.category_id
-  } else if (index.startsWith('cat-')) {
-    query.category_id = index.slice(4)
-  }
-  router.push({ name: 'home', query })
+  if (!index.startsWith('cat-')) return
+  router.push({ name: 'home', query: buildQuery({ page: 1, category_id: index.slice(4) }) })
 }
 
 // 点一级分类标题：直接按该一级分类筛选，后端会级联它下面所有二级分类的商品
@@ -284,5 +264,30 @@ onMounted(async () => {
 
 .grid-item {
   margin-bottom: 12px;
+}
+
+/* 每页 10 条，宽屏固定一行 5 个 */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 1100px) {
+  .product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 </style>

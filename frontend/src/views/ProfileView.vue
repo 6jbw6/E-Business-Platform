@@ -6,40 +6,32 @@
       <el-col :xs="24" :md="14">
         <el-card shadow="never" v-loading="!user.profile">
           <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
-            <el-form-item label="登录名">
-              <el-input :model-value="user.profile?.username" disabled />
-              <span class="text-muted">登录名注册后不可修改</span>
-            </el-form-item>
-            <el-form-item label="昵称" prop="nickname">
-              <el-input v-model="form.nickname" maxlength="32" show-word-limit />
-            </el-form-item>
-            <el-form-item label="手机号" prop="phone">
-              <el-input v-model="form.phone" maxlength="20" placeholder="纯数字" />
-            </el-form-item>
-            <el-form-item label="邮箱" prop="email">
-              <el-input v-model="form.email" maxlength="128" />
-            </el-form-item>
             <el-form-item label="头像">
-              <div class="avatar-row">
+              <div class="avatar-pick" @click="pickImage" title="点击更换头像">
                 <el-avatar :size="72" :src="user.profile?.avatar" shape="circle">
                   {{ user.displayName.slice(0, 1) }}
                 </el-avatar>
-                <div class="avatar-actions">
-                  <el-button type="primary" plain @click="pickImage">选择图片并裁剪</el-button>
-                  <span class="text-muted">支持 JPG / PNG / GIF / WebP，单张不超过 5 MB</span>
-                </div>
-                <input
-                  ref="fileInputRef"
-                  type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  class="hidden-input"
-                  @change="onFilePicked"
-                />
+                <div class="avatar-mask"><el-icon><Camera /></el-icon><span>更换</span></div>
               </div>
+              <input
+                ref="fileInputRef"
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                class="hidden-input"
+                @change="onFilePicked"
+              />
             </el-form-item>
-            <el-form-item>
-              <el-button type="primary" :loading="saving" @click="onSave">保存修改</el-button>
-              <el-button @click="reload">放弃修改</el-button>
+            <el-form-item label="登录名">
+              <el-input :model-value="user.profile?.username" disabled />
+            </el-form-item>
+            <el-form-item label="昵称" prop="nickname">
+              <el-input v-model="form.nickname" maxlength="32" @blur="autoSave('nickname')" />
+            </el-form-item>
+            <el-form-item label="手机号" prop="phone">
+              <el-input v-model="form.phone" maxlength="20" placeholder="纯数字" @blur="autoSave('phone')" />
+            </el-form-item>
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="form.email" maxlength="128" @blur="autoSave('email')" />
             </el-form-item>
           </el-form>
         </el-card>
@@ -50,11 +42,7 @@
           <template #header><span class="card-title">账号信息</span></template>
           <el-descriptions :column="1" border>
             <el-descriptions-item label="用户 ID">{{ user.profile?.id }}</el-descriptions-item>
-            <el-descriptions-item label="角色">
-              <el-tag :type="user.isAdmin ? 'warning' : 'info'" size="small" effect="plain">
-                {{ user.isAdmin ? '管理员' : '普通用户' }}
-              </el-tag>
-            </el-descriptions-item>
+            <el-descriptions-item label="角色">{{ user.isAdmin ? '管理员' : '普通用户' }}</el-descriptions-item>
             <el-descriptions-item label="账号状态">
               {{ user.profile?.status === 1 ? '正常' : '已禁用' }}
             </el-descriptions-item>
@@ -90,6 +78,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Camera } from '@element-plus/icons-vue'
 import { CircleStencil, Cropper } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
 
@@ -103,7 +92,6 @@ const router = useRouter()
 const user = useUserStore()
 
 const formRef = ref()
-const saving = ref(false)
 const form = reactive({ nickname: '', phone: '', email: '' })
 
 const fileInputRef = ref()
@@ -194,17 +182,19 @@ async function onConfirmCrop() {
   }
 }
 
-async function onSave() {
-  const valid = await formRef.value?.validate().catch(() => false)
+// 失焦即保存：字段没变、或该字段校验没过，都不发请求
+async function autoSave(field) {
+  const value = form[field] ?? ''
+  if (value === (user.profile?.[field] ?? '')) return
+
+  const valid = await formRef.value?.validateField(field).then(() => true).catch(() => false)
   if (!valid) return
-  saving.value = true
+
   try {
-    await user.saveProfile({ ...form })
-    ElMessage.success('资料已更新')
+    await user.saveProfile({ [field]: value })
+    ElMessage.success('已保存')
   } catch {
     // 提示由拦截器给出
-  } finally {
-    saving.value = false
   }
 }
 
@@ -241,17 +231,38 @@ onMounted(async () => {
   margin-top: 16px;
 }
 
-.avatar-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+.avatar-pick {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
-.avatar-actions {
+.avatar-pick .el-avatar {
+  background: var(--brand-color);
+  color: #fff;
+}
+
+/* 悬停才浮出「更换」遮罩，平时保持一张干净的圆头像 */
+.avatar-mask {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.avatar-pick:hover .avatar-mask {
+  opacity: 1;
 }
 
 .hidden-input {

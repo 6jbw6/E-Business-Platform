@@ -26,16 +26,17 @@
           <router-link :to="{ name: 'orders' }">我的订单</router-link>
           <router-link :to="{ name: 'cart' }" class="cart-link">
             <el-badge :value="cart.badge" :hidden="!cart.totalQuantity" type="danger">
-              <el-icon :size="18"><ShoppingCart /></el-icon>
+              <span>购物车</span>
             </el-badge>
-            <span>购物车</span>
           </router-link>
           <router-link v-if="user.isAdmin" :to="{ name: 'admin-categories' }">管理后台</router-link>
 
           <template v-if="user.isLoggedIn">
             <el-dropdown trigger="click">
               <span class="user-entry">
-                <el-icon><UserFilled /></el-icon>
+                <el-avatar :size="24" :src="user.profile?.avatar" class="user-avatar">
+                  {{ user.displayName.slice(0, 1) }}
+                </el-avatar>
                 {{ user.displayName }}
                 <el-icon><ArrowDown /></el-icon>
               </span>
@@ -61,7 +62,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowDown, Search, Shop, ShoppingCart, UserFilled } from '@element-plus/icons-vue'
+import { ArrowDown, Search, Shop } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 import { useCartStore } from '@/stores/cart'
@@ -171,11 +172,18 @@ watch(
 .user-entry {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
   font-size: 14px;
   color: #606266;
   outline: none;
+}
+
+.user-avatar {
+  flex: none;
+  background: var(--brand-color);
+  color: #fff;
+  font-size: 12px;
 }
 
 .shop-main {
