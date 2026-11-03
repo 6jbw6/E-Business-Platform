@@ -1,0 +1,6 @@
+* text=auto
+
+# 部署脚本要在 Linux 上直接执行，必须保持 LF
+*.sh text eol=lf
+*.sql text eol=lf
+*.py text eol=lf
