@@ -73,6 +73,51 @@ def expect_ok(base, method, path, **kw):
     return body["data"]
 
 
+def upload_avatar(base: str, token: str, payload: bytes, filename: str = "probe.png"):
+    """手工拼 multipart 请求，避免为冒烟脚本引入额外依赖。"""
+    boundary = "----qoderSmokeBoundary"
+    body = (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="file"; filename="{filename}"\r\n'
+        f"Content-Type: image/png\r\n\r\n"
+    ).encode() + payload + f"\r\n--{boundary}--\r\n".encode()
+    req = urllib.request.Request(
+        base.rstrip("/") + "/api/v1/auth/avatar",
+        data=body,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            return resp.status, json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        raw = exc.read().decode("utf-8")
+        return exc.code, json.loads(raw) if raw else {}
+
+
+def tiny_png() -> bytes:
+    """用 zlib 现造一张合法的 2x2 PNG，作为上传探针。"""
+    import struct
+    import zlib as _zlib
+
+    raw = b"".join(b"\x00" + b"\xff\x00\x00" * 2 for _ in range(2))
+
+    def chunk(kind: bytes, data: bytes) -> bytes:
+        return struct.pack(">I", len(data)) + kind + data + struct.pack(
+            ">I", _zlib.crc32(kind + data) & 0xFFFFFFFF
+        )
+
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + chunk(b"IHDR", struct.pack(">IIBBBBB", 2, 2, 8, 2, 0, 0, 0))
+        + chunk(b"IDAT", _zlib.compress(raw))
+        + chunk(b"IEND", b"")
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base", default="http://127.0.0.1:8000")
@@ -99,6 +144,25 @@ def main() -> int:
     me = expect_ok(base, "GET", "/api/v1/auth/me", token=token)
     assert me["username"] == username and me["role"] == "user"
     _results.append(("读取当前用户 /auth/me", True, f"{me['nickname']}（{me['role']}）"))
+
+    png = tiny_png()
+    st, body = upload_avatar(base, token, png)
+    assert st == 200 and body["code"] == 0 and body["data"]["avatar"].startswith("/uploads/avatars/"), body
+    avatar_url = body["data"]["avatar"]
+    _results.append(("上传合法PNG头像", True, avatar_url))
+
+    with urllib.request.urlopen(base.rstrip("/") + avatar_url, timeout=15) as resp:
+        served = resp.read()
+    assert resp.status == 200 and served == png, "静态目录读回的字节应与上传一致"
+    _results.append(("头像静态可访问", True, f"HTTP {resp.status}，{len(served)} 字节与上传一致"))
+
+    st, body = upload_avatar(base, token, b"plain text pretending to be png")
+    assert st == 400 and body["code"] == 40000
+    _results.append(("伪装成PNG的文本被拒", True, f"HTTP {st} {body['message']}"))
+
+    st, body = upload_avatar(base, token, png + b"\x00" * (2 * 1024 * 1024))
+    assert st == 400 and "太大" in body["message"]
+    _results.append(("超过2MB的头像被拒", True, f"HTTP {st} {body['message']}"))
 
     bad = call(base, "POST", "/api/v1/auth/login", payload={"username": username, "password": "wrong-pass"})
     assert bad[0] == 401 and bad[1]["code"] == 40100

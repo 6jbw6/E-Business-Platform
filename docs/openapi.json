@@ -158,6 +158,52 @@
         ]
       }
     },
+    "/api/v1/auth/avatar": {
+      "post": {
+        "tags": [
+          "用户与登录"
+        ],
+        "summary": "上传头像（前端已裁剪为方形 PNG，服务端按文件头校验类型）",
+        "operationId": "upload_avatar_api_v1_auth_avatar_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_avatar_api_v1_auth_avatar_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/categories/tree": {
       "get": {
         "tags": [
@@ -1749,6 +1795,21 @@
         },
         "type": "object",
         "title": "ApiResponse[list[CategoryTreeOut]]"
+      },
+      "Body_upload_avatar_api_v1_auth_avatar_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "图片文件，multipart/form-data 的 file 字段"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_avatar_api_v1_auth_avatar_post"
       },
       "CartAddRequest": {
         "properties": {

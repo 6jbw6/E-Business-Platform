@@ -55,16 +55,6 @@
     <main class="shop-main">
       <router-view />
     </main>
-
-    <footer class="shop-footer">
-      <span>B2C 商城后端课程演示 · Vue 3 + FastAPI</span>
-      <span class="footer-status">
-        后端状态：
-        <el-tag :type="backendUp ? 'success' : 'danger'" size="small" effect="plain">
-          {{ backendUp ? '在线' : '未连接' }}
-        </el-tag>
-      </span>
-    </footer>
   </div>
 </template>
 
@@ -72,7 +62,6 @@
 import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowDown, Search, Shop, ShoppingCart, UserFilled } from '@element-plus/icons-vue'
-import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 import { useCartStore } from '@/stores/cart'
@@ -84,7 +73,6 @@ const user = useUserStore()
 const cart = useCartStore()
 
 const keyword = ref(route.query.keyword ?? '')
-const backendUp = ref(false)
 
 function onSearch() {
   router.push({ name: 'home', query: keyword.value ? { keyword: keyword.value } : {} })
@@ -96,17 +84,7 @@ function onLogout() {
   router.push({ name: 'login' })
 }
 
-async function checkBackend() {
-  try {
-    const { data } = await axios.get('/health', { timeout: 4000 })
-    backendUp.value = data?.data?.database === 'up'
-  } catch {
-    backendUp.value = false
-  }
-}
-
 onMounted(() => {
-  checkBackend()
   // 从首页搜索框跳到详情页再返回时，保持关键词与地址栏一致
   if (route.query.keyword) keyword.value = String(route.query.keyword)
 })
@@ -202,24 +180,5 @@ watch(
 
 .shop-main {
   flex: 1;
-}
-
-.shop-footer {
-  border-top: 1px solid #e4e7ed;
-  background: #fff;
-  color: #909399;
-  font-size: 13px;
-  padding: 16px;
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.footer-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 </style>

@@ -12,8 +12,10 @@
               <span>全部商品</span>
             </el-menu-item>
             <el-sub-menu v-for="root in categories" :key="root.id" :index="`root-${root.id}`">
-              <template #title>{{ root.name }}</template>
-              <el-menu-item :index="`cat-${root.id}`">{{ root.name }}（全部）</el-menu-item>
+              <!-- 点标题即按一级分类筛选（后端会级联其下所有二级分类），不再额外放一个「（全部）」子项 -->
+              <template #title>
+                <span class="submenu-title" @click="selectCategory(root.id)">{{ root.name }}</span>
+              </template>
               <el-menu-item v-for="child in root.children" :key="child.id" :index="`cat-${child.id}`">
                 {{ child.name }}
               </el-menu-item>
@@ -88,14 +90,12 @@
         <el-pagination
           v-if="total > pageSize"
           class="mt-16"
-          layout="total, sizes, prev, pager, next, jumper"
+          layout="prev, pager, next"
           background
           :current-page="page"
           :page-size="pageSize"
-          :page-sizes="[8, 12, 24, 48]"
           :total="total"
           @current-change="onPageChange"
-          @size-change="onSizeChange"
         />
       </el-col>
     </el-row>
@@ -113,6 +113,9 @@ import ProductCard from '@/components/ProductCard.vue'
 const route = useRoute()
 const router = useRouter()
 
+// 首页固定每页 10 条，分页条不再提供条数切换
+const DEFAULT_PAGE_SIZE = 10
+
 const categories = ref([])
 const products = ref([])
 const total = ref(0)
@@ -123,7 +126,7 @@ const sort = ref(route.query.sort || 'default')
 const minPrice = ref(route.query.min_price ? Number(route.query.min_price) : undefined)
 const maxPrice = ref(route.query.max_price ? Number(route.query.max_price) : undefined)
 const page = ref(Number(route.query.page) || 1)
-const pageSize = ref(Number(route.query.page_size) || 8)
+const pageSize = ref(DEFAULT_PAGE_SIZE)
 
 const activeCategoryKey = computed(() => {
   const id = route.query.category_id
@@ -142,7 +145,6 @@ function buildQuery(overrides = {}) {
     max_price: route.query.max_price,
     sort: sort.value,
     page: page.value,
-    page_size: pageSize.value,
     ...overrides,
   }
   Object.keys(query).forEach((key) => {
@@ -162,7 +164,7 @@ async function load() {
       max_price: route.query.max_price,
       sort: route.query.sort || 'default',
       page: Number(route.query.page) || 1,
-      page_size: Number(route.query.page_size) || 8,
+      page_size: DEFAULT_PAGE_SIZE,
     })
     products.value = data.items
     total.value = data.total
@@ -185,6 +187,11 @@ function onSelectCategory(index) {
   router.push({ name: 'home', query })
 }
 
+// 点一级分类标题：直接按该一级分类筛选，后端会级联它下面所有二级分类的商品
+function selectCategory(rootId) {
+  router.push({ name: 'home', query: buildQuery({ page: 1, category_id: rootId }) })
+}
+
 function applyFilters() {
   page.value = 1
   router.push({
@@ -201,7 +208,7 @@ function resetFilters() {
   minPrice.value = undefined
   maxPrice.value = undefined
   sort.value = 'default'
-  router.push({ name: 'home', query: { page: 1, page_size: pageSize.value } })
+  router.push({ name: 'home', query: { page: 1 } })
 }
 
 function onSortChange() {
@@ -214,12 +221,6 @@ function onPageChange(value) {
   router.push({ name: 'home', query: buildQuery({ page: value }) })
 }
 
-function onSizeChange(value) {
-  pageSize.value = value
-  page.value = 1
-  router.push({ name: 'home', query: buildQuery({ page: 1, page_size: value }) })
-}
-
 // 顶栏搜索框改的是 URL，这里跟着重新拉数据
 watch(
   () => route.query,
@@ -229,7 +230,6 @@ watch(
     minPrice.value = route.query.min_price ? Number(route.query.min_price) : undefined
     maxPrice.value = route.query.max_price ? Number(route.query.max_price) : undefined
     page.value = Number(route.query.page) || 1
-    pageSize.value = Number(route.query.page_size) || 8
     load()
   },
 )
@@ -255,6 +255,12 @@ onMounted(async () => {
 
 .category-menu {
   border-right: none;
+}
+
+.submenu-title {
+  /* 一级分类标题本身可点，点下去就是「这一大类的全部商品」 */
+  pointer-events: auto;
+  flex: 1;
 }
 
 .toolbar {

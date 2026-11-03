@@ -15,3 +15,10 @@ export function fetchCurrentUser(config = {}) {
 export function updateProfile(payload) {
   return http.put('/auth/me', payload)
 }
+
+/** 上传裁剪好的头像。不手动设 Content-Type，交给浏览器带上 multipart boundary。 */
+export function uploadAvatar(blob) {
+  const form = new FormData()
+  form.append('file', blob, 'avatar.png')
+  return http.post('/auth/avatar', form)
+}

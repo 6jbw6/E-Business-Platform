@@ -1,6 +1,12 @@
 import { defineStore } from 'pinia'
 import { TOKEN_KEY } from '@/api/http'
-import { fetchCurrentUser, login as loginApi, register as registerApi, updateProfile } from '@/api/auth'
+import {
+  fetchCurrentUser,
+  login as loginApi,
+  register as registerApi,
+  updateProfile,
+  uploadAvatar as uploadAvatarApi,
+} from '@/api/auth'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -32,6 +38,11 @@ export const useUserStore = defineStore('user', {
     },
     async saveProfile(payload) {
       const data = await updateProfile(payload)
+      this.profile = data
+      return data
+    },
+    async uploadAvatar(blob) {
+      const data = await uploadAvatarApi(blob)
       this.profile = data
       return data
     },

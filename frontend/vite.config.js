@@ -18,6 +18,11 @@ export default defineConfig(({ mode }) => ({
         target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
+      // 头像等上传文件由后端 StaticFiles 提供，不代理的话开发服务器会拿 index.html 兜底
+      '/uploads': {
+        target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
       '/health': {
         target: process.env.VITE_PROXY_TARGET || 'http://127.0.0.1:8000',
         changeOrigin: true,

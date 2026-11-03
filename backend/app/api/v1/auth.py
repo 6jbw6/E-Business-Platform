@@ -1,10 +1,11 @@
 """登录、注册与个人资料。"""
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, File, UploadFile, status
 
 from backend.app.core.config import settings
 from backend.app.core.deps import CurrentUser, DbSession
 from backend.app.core.security import create_access_token
+from backend.app.core.storage import delete_avatar, save_avatar
 from backend.app.crud import user as crud_user
 from backend.app.schemas.common import ApiResponse
 from backend.app.schemas.user import (
@@ -57,3 +58,22 @@ def read_me(user: CurrentUser):
 def update_me(payload: UserUpdateRequest, user: CurrentUser, db: DbSession):
     updated = crud_user.update_profile(db, user, **payload.model_dump(exclude_none=True))
     return ApiResponse(data=UserOut.model_validate(updated), message="资料已更新")
+
+
+@router.post(
+    "/avatar",
+    response_model=ApiResponse[UserOut],
+    summary="上传头像（前端已裁剪为方形 PNG，服务端按文件头校验类型）",
+)
+async def upload_avatar(
+    db: DbSession,
+    user: CurrentUser,
+    file: UploadFile = File(..., description="图片文件，multipart/form-data 的 file 字段"),
+):
+    data = await file.read()
+    old_avatar = user.avatar
+    url = save_avatar(user.id, data)
+    updated = crud_user.update_profile(db, user, avatar=url)
+    # 换成功后再删旧文件，避免上传失败时把用户原有头像弄丢
+    delete_avatar(old_avatar)
+    return ApiResponse(data=UserOut.model_validate(updated), message="头像已更新")

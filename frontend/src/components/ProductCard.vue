@@ -1,6 +1,11 @@
 <template>
-  <el-card class="product-card" shadow="hover" :body-style="{ padding: '12px', overflow: 'hidden' }">
-    <div class="thumb-wrap" @click="goDetail">
+  <el-card
+    class="product-card"
+    shadow="hover"
+    :body-style="{ padding: '12px', overflow: 'hidden' }"
+    @click="goDetail"
+  >
+    <div class="thumb-wrap">
       <el-image :src="product.main_image" fit="cover" class="product-thumb">
         <template #error>
           <div class="thumb-fallback">
@@ -27,29 +32,12 @@
       <span class="text-muted">库存 {{ product.stock }} {{ product.unit }}</span>
       <span class="text-muted">已售 {{ product.sales }}</span>
     </div>
-
-    <div class="product-actions">
-      <el-button size="small" @click="goDetail">详情</el-button>
-      <el-button
-        size="small"
-        type="primary"
-        :disabled="product.stock <= 0"
-        :loading="adding"
-        @click="onAddToCart"
-      >
-        加入购物车
-      </el-button>
-    </div>
   </el-card>
 </template>
 
 <script setup>
-import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 
-import { useCartStore } from '@/stores/cart'
-import { useUserStore } from '@/stores/user'
 import { yuan } from '@/utils/format'
 
 const props = defineProps({
@@ -57,40 +45,20 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const user = useUserStore()
-const cart = useCartStore()
-const adding = ref(false)
 
 function goDetail() {
   router.push({ name: 'product-detail', params: { id: props.product.id } })
-}
-
-async function onAddToCart() {
-  if (!user.isLoggedIn) {
-    ElMessage.warning('请先登录后再加购')
-    router.push({ name: 'login', query: { redirect: router.currentRoute.value.fullPath } })
-    return
-  }
-  adding.value = true
-  try {
-    await cart.add(props.product.id, 1)
-    ElMessage.success('已加入购物车')
-  } catch {
-    // 库存不足/已下架等提示由拦截器给出
-  } finally {
-    adding.value = false
-  }
 }
 </script>
 
 <style scoped>
 .product-card {
   height: 100%;
+  cursor: pointer;
 }
 
 .thumb-wrap {
   position: relative;
-  cursor: pointer;
 }
 
 .stock-tag {
@@ -139,25 +107,6 @@ async function onAddToCart() {
   justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
-  margin: 6px 0 10px;
-}
-
-.product-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.product-actions .el-button {
-  /* min-width: 0 才能让 flex 收缩按钮，否则按钮内容宽度就是下限 */
-  flex: 1 1 auto;
-  min-width: 0;
-  margin-left: 0;
-}
-
-.product-actions :deep(.el-button > span) {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-top: 6px;
 }
 </style>

@@ -8,11 +8,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from backend.app.api.router import api_router
 from backend.app.core.config import settings
 from backend.app.core.exceptions import register_exception_handlers
+from backend.app.core.storage import upload_root
 from backend.app.db.session import engine
 from backend.app.schemas.common import ApiResponse, HealthOut
 
@@ -65,6 +67,15 @@ def create_app() -> FastAPI:
 
     register_exception_handlers(app)
     app.include_router(api_router, prefix=settings.api_prefix)
+
+    # 头像等上传文件走静态目录，不经过业务代码，避免任意路径读取
+    uploads = upload_root()
+    uploads.mkdir(parents=True, exist_ok=True)
+    app.mount(
+        settings.upload_url_prefix,
+        StaticFiles(directory=str(uploads)),
+        name="uploads",
+    )
 
     @app.get("/", include_in_schema=False)
     async def index() -> dict[str, str]:
