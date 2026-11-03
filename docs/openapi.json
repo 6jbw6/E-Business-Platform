@@ -1074,6 +1074,18 @@
               "default": 10,
               "title": "Page Size"
             }
+          },
+          {
+            "name": "all",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "管理员传 true 查看全站订单，用于发货台",
+              "default": false,
+              "title": "All"
+            },
+            "description": "管理员传 true 查看全站订单，用于发货台"
           }
         ],
         "responses": {

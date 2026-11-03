@@ -138,9 +138,12 @@ def create_order(
 
 
 def list_orders(
-    db: Session, user_id: int, *, status: int | None = None, page: int = 1, page_size: int = 10
+    db: Session, user_id: int | None, *, status: int | None = None, page: int = 1, page_size: int = 10
 ) -> tuple[list[Order], int]:
-    stmt = select(Order).where(Order.user_id == user_id)
+    """user_id 传 None 表示不限用户（仅管理员的全站订单视图使用）。"""
+    stmt = select(Order)
+    if user_id is not None:
+        stmt = stmt.where(Order.user_id == user_id)
     if status is not None:
         stmt = stmt.where(Order.status == status)
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))

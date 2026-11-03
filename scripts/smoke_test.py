@@ -178,6 +178,14 @@ def main() -> int:
     assert my_orders["total"] >= 1
     _results.append(("我的订单列表", True, f"共 {my_orders['total']} 单"))
 
+    all_orders = expect_ok(base, "GET", "/api/v1/orders?all=true&page_size=50", token=admin_token)
+    assert all_orders["total"] >= 1
+    _results.append(("管理员查看全站订单", True, f"共 {all_orders['total']} 单"))
+
+    neg_status, neg_body = call(base, "GET", "/api/v1/orders?all=true", token=token)
+    assert neg_status == 403 and neg_body["code"] == 40300
+    _results.append(("普通用户查全站订单被拒绝", True, f"HTTP {neg_status} {neg_body['message']}"))
+
     # 再下一单用于验证取消回滚
     expect_ok(base, "POST", "/api/v1/cart", token=token, payload={"product_id": first["id"], "quantity": 3})
     order2 = expect_ok(base, "POST", "/api/v1/orders", token=token, payload={

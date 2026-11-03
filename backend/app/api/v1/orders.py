@@ -3,8 +3,10 @@
 from fastapi import APIRouter, Query, status
 
 from backend.app.core.deps import CurrentAdmin, CurrentUser, DbSession
+from backend.app.core.exceptions import forbidden
 from backend.app.crud import order as crud
 from backend.app.models.order import Order
+from backend.app.models.user import ROLE_ADMIN
 from backend.app.schemas.common import ApiResponse, PageData, make_page
 from backend.app.schemas.order import (
     OrderCreateRequest,
@@ -66,8 +68,14 @@ def read_orders(
     status_: int | None = Query(default=None, alias="status", ge=0, le=4, description="按状态筛选"),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=10, ge=1, le=50),
+    all_users: bool = Query(
+        default=False, alias="all", description="管理员传 true 查看全站订单，用于发货台"
+    ),
 ):
-    orders, total = crud.list_orders(db, user.id, status=status_, page=page, page_size=page_size)
+    if all_users and user.role != ROLE_ADMIN:
+        raise forbidden("查看全站订单仅管理员可用")
+    scope = None if all_users else user.id
+    orders, total = crud.list_orders(db, scope, status=status_, page=page, page_size=page_size)
     return ApiResponse(data=make_page([_to_out(o) for o in orders], total, page, page_size))
 
 
