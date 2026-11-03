@@ -1,0 +1,3366 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "B2C 商城后端服务",
+    "description": "\nB2C 商城后端接口。所有业务接口统一挂在 `/api/v1` 下，返回结构固定为\n`{\"code\": 0, \"message\": \"success\", \"data\": ...}`，`code` 非 0 即为业务错误。\n\n**鉴权方式**：先调用 `/api/v1/auth/login` 拿到 `access_token`，\n后续请求头带上 `Authorization: Bearer <token>`（点右上角 Authorize 按钮可直接粘贴）。\n",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "用户与登录"
+        ],
+        "summary": "注册新用户",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "用户与登录"
+        ],
+        "summary": "登录换取访问令牌",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_TokenOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "用户与登录"
+        ],
+        "summary": "查看当前登录用户",
+        "operationId": "read_me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserOut_"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "用户与登录"
+        ],
+        "summary": "修改个人资料",
+        "operationId": "update_me_api_v1_auth_me_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_UserOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/categories/tree": {
+      "get": {
+        "tags": [
+          "商品类别"
+        ],
+        "summary": "分类树（一级带二级）",
+        "operationId": "read_tree_api_v1_categories_tree_get",
+        "parameters": [
+          {
+            "name": "include_hidden",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "是否包含隐藏分类，仅管理员用",
+              "default": false,
+              "title": "Include Hidden"
+            },
+            "description": "是否包含隐藏分类，仅管理员用"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_CategoryTreeOut__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "tags": [
+          "商品类别"
+        ],
+        "summary": "分类平铺列表",
+        "operationId": "read_list_api_v1_categories_get",
+        "parameters": [
+          {
+            "name": "include_hidden",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Include Hidden"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_list_CategoryOut__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "商品类别"
+        ],
+        "summary": "新建分类（管理员）",
+        "operationId": "create_category_api_v1_categories_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CategoryOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{category_id}": {
+      "get": {
+        "tags": [
+          "商品类别"
+        ],
+        "summary": "分类详情",
+        "operationId": "read_one_api_v1_categories__category_id__get",
+        "parameters": [
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Category Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CategoryOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "商品类别"
+        ],
+        "summary": "修改分类（管理员）",
+        "operationId": "update_category_api_v1_categories__category_id__put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Category Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CategoryOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "商品类别"
+        ],
+        "summary": "删除分类（管理员）",
+        "operationId": "delete_category_api_v1_categories__category_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Category Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/products": {
+      "get": {
+        "tags": [
+          "商品"
+        ],
+        "summary": "商品列表（分页/搜索/筛选/排序）",
+        "operationId": "read_products_api_v1_products_get",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 50
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "按商品名/副标题模糊搜索",
+              "title": "Keyword"
+            },
+            "description": "按商品名/副标题模糊搜索"
+          },
+          {
+            "name": "category_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "分类ID，传一级分类会级联其子分类",
+              "title": "Category Id"
+            },
+            "description": "分类ID，传一级分类会级联其子分类"
+          },
+          {
+            "name": "min_price",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "价格下限",
+              "title": "Min Price"
+            },
+            "description": "价格下限"
+          },
+          {
+            "name": "max_price",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0.0
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "价格上限",
+              "title": "Max Price"
+            },
+            "description": "价格上限"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "排序：default/price_asc/price_desc/sales_desc/newest",
+              "default": "default",
+              "title": "Sort"
+            },
+            "description": "排序：default/price_asc/price_desc/sales_desc/newest"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "show_all",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "管理员可传 true 查看已下架商品",
+              "default": false,
+              "title": "Show All"
+            },
+            "description": "管理员可传 true 查看已下架商品"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_PageData_ProductOut__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "商品"
+        ],
+        "summary": "发布商品（管理员）",
+        "operationId": "create_product_api_v1_products_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ProductOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/products/{product_id}": {
+      "get": {
+        "tags": [
+          "商品"
+        ],
+        "summary": "商品详情",
+        "operationId": "read_product_api_v1_products__product_id__get",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ProductDetailOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "商品"
+        ],
+        "summary": "修改商品（管理员）",
+        "operationId": "update_product_api_v1_products__product_id__put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ProductOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "商品"
+        ],
+        "summary": "下架商品（管理员）",
+        "operationId": "delete_product_api_v1_products__product_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Product Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_NoneType_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cart": {
+      "get": {
+        "tags": [
+          "购物车"
+        ],
+        "summary": "查看购物车",
+        "operationId": "read_cart_api_v1_cart_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CartOut_"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "购物车"
+        ],
+        "summary": "加入购物车（重复加购则累加数量）",
+        "operationId": "add_to_cart_api_v1_cart_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartAddRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CartOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "购物车"
+        ],
+        "summary": "清空购物车",
+        "operationId": "clear_cart_api_v1_cart_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CartOut_"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/cart/{item_id}": {
+      "put": {
+        "tags": [
+          "购物车"
+        ],
+        "summary": "修改数量或勾选状态",
+        "operationId": "update_cart_item_api_v1_cart__item_id__put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CartOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "购物车"
+        ],
+        "summary": "移除一件商品",
+        "operationId": "remove_cart_item_api_v1_cart__item_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_CartOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders": {
+      "post": {
+        "tags": [
+          "订单"
+        ],
+        "summary": "提交订单",
+        "operationId": "create_order_api_v1_orders_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_OrderDetailOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "订单"
+        ],
+        "summary": "我的订单列表",
+        "operationId": "read_orders_api_v1_orders_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 4,
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "按状态筛选",
+              "title": "Status"
+            },
+            "description": "按状态筛选"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 10,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_PageData_OrderOut__"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}": {
+      "get": {
+        "tags": [
+          "订单"
+        ],
+        "summary": "订单详情",
+        "operationId": "read_order_api_v1_orders__order_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_OrderDetailOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}/payment": {
+      "put": {
+        "tags": [
+          "订单"
+        ],
+        "summary": "支付订单（模拟）",
+        "operationId": "pay_order_api_v1_orders__order_id__payment_put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_OrderDetailOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}/shipment": {
+      "put": {
+        "tags": [
+          "订单"
+        ],
+        "summary": "发货（管理员）",
+        "operationId": "ship_order_api_v1_orders__order_id__shipment_put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_OrderDetailOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}/receipt": {
+      "put": {
+        "tags": [
+          "订单"
+        ],
+        "summary": "确认收货",
+        "operationId": "receive_order_api_v1_orders__order_id__receipt_put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_OrderDetailOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/orders/{order_id}/cancellation": {
+      "put": {
+        "tags": [
+          "订单"
+        ],
+        "summary": "取消订单（回滚库存）",
+        "operationId": "cancel_order_api_v1_orders__order_id__cancellation_put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_OrderDetailOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "服务状态"
+        ],
+        "summary": "健康检查",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_HealthOut_"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiResponse_CartOut_": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CartOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[CartOut]"
+      },
+      "ApiResponse_CategoryOut_": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CategoryOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[CategoryOut]"
+      },
+      "ApiResponse_HealthOut_": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/HealthOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[HealthOut]"
+      },
+      "ApiResponse_NoneType_": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "type": "null",
+            "title": "Data",
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[NoneType]"
+      },
+      "ApiResponse_OrderDetailOut_": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrderDetailOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[OrderDetailOut]"
+      },
+      "ApiResponse_PageData_OrderOut__": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PageData_OrderOut_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[PageData[OrderOut]]"
+      },
+      "ApiResponse_PageData_ProductOut__": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PageData_ProductOut_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[PageData[ProductOut]]"
+      },
+      "ApiResponse_ProductDetailOut_": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductDetailOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[ProductDetailOut]"
+      },
+      "ApiResponse_ProductOut_": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[ProductOut]"
+      },
+      "ApiResponse_TokenOut_": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TokenOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[TokenOut]"
+      },
+      "ApiResponse_UserOut_": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[UserOut]"
+      },
+      "ApiResponse_list_CategoryOut__": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/CategoryOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[list[CategoryOut]]"
+      },
+      "ApiResponse_list_CategoryTreeOut__": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/CategoryTreeOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data",
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[list[CategoryTreeOut]]"
+      },
+      "CartAddRequest": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id",
+            "description": "商品ID"
+          },
+          "quantity": {
+            "type": "integer",
+            "maximum": 999.0,
+            "minimum": 1.0,
+            "title": "Quantity",
+            "description": "加购数量",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id"
+        ],
+        "title": "CartAddRequest"
+      },
+      "CartItemOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "购物车行ID"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id",
+            "description": "商品ID"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name",
+            "description": "商品名称"
+          },
+          "product_image": {
+            "type": "string",
+            "title": "Product Image",
+            "description": "商品主图",
+            "default": ""
+          },
+          "price": {
+            "type": "string",
+            "title": "Price",
+            "description": "当前售价（元）"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity",
+            "description": "数量"
+          },
+          "checked": {
+            "type": "integer",
+            "title": "Checked",
+            "description": "是否勾选结算：1=勾选，0=未勾选"
+          },
+          "subtotal": {
+            "type": "string",
+            "title": "Subtotal",
+            "description": "该行小计=售价×数量"
+          },
+          "stock": {
+            "type": "integer",
+            "title": "Stock",
+            "description": "商品当前库存"
+          },
+          "on_sale": {
+            "type": "boolean",
+            "title": "On Sale",
+            "description": "商品是否仍在售"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "product_id",
+          "product_name",
+          "price",
+          "quantity",
+          "checked",
+          "subtotal",
+          "stock",
+          "on_sale"
+        ],
+        "title": "CartItemOut"
+      },
+      "CartOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CartItemOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "购物车明细"
+          },
+          "total_quantity": {
+            "type": "integer",
+            "title": "Total Quantity",
+            "description": "勾选商品总件数"
+          },
+          "total_amount": {
+            "type": "string",
+            "title": "Total Amount",
+            "description": "勾选商品总金额（元）"
+          },
+          "checked_count": {
+            "type": "integer",
+            "title": "Checked Count",
+            "description": "勾选种数"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_quantity",
+          "total_amount",
+          "checked_count"
+        ],
+        "title": "CartOut"
+      },
+      "CartUpdateRequest": {
+        "properties": {
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 999.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity",
+            "description": "修改后的数量"
+          },
+          "checked": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checked",
+            "description": "是否勾选结算：1=勾选，0=取消勾选"
+          }
+        },
+        "type": "object",
+        "title": "CartUpdateRequest"
+      },
+      "CategoryCreateRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Name",
+            "description": "类别名称"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id",
+            "description": "父类别ID，不传即一级分类"
+          },
+          "icon": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Icon",
+            "description": "类别图标",
+            "default": ""
+          },
+          "sort_order": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Sort Order",
+            "description": "同级排序，越小越靠前",
+            "default": 0
+          },
+          "status": {
+            "type": "integer",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Status",
+            "description": "状态：1=显示，0=隐藏",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CategoryCreateRequest"
+      },
+      "CategoryOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "类别ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "类别名称"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id",
+            "description": "父类别ID"
+          },
+          "level": {
+            "type": "integer",
+            "title": "Level",
+            "description": "层级：1=一级，2=二级"
+          },
+          "icon": {
+            "type": "string",
+            "title": "Icon",
+            "description": "类别图标",
+            "default": ""
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order",
+            "description": "同级排序"
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "description": "状态：1=显示，0=隐藏"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "level",
+          "sort_order",
+          "status"
+        ],
+        "title": "CategoryOut"
+      },
+      "CategoryTreeOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "类别ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "类别名称"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id",
+            "description": "父类别ID"
+          },
+          "level": {
+            "type": "integer",
+            "title": "Level",
+            "description": "层级：1=一级，2=二级"
+          },
+          "icon": {
+            "type": "string",
+            "title": "Icon",
+            "description": "类别图标",
+            "default": ""
+          },
+          "sort_order": {
+            "type": "integer",
+            "title": "Sort Order",
+            "description": "同级排序"
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "description": "状态：1=显示，0=隐藏"
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryOut"
+            },
+            "type": "array",
+            "title": "Children",
+            "description": "子分类列表"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "level",
+          "sort_order",
+          "status"
+        ],
+        "title": "CategoryTreeOut"
+      },
+      "CategoryUpdateRequest": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Order"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "title": "CategoryUpdateRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "服务状态，正常时为 up"
+          },
+          "database": {
+            "type": "string",
+            "title": "Database",
+            "description": "数据库连通性"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "服务版本号"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "database",
+          "version"
+        ],
+        "title": "HealthOut"
+      },
+      "LoginRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username",
+            "description": "登录名"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password",
+            "description": "登录密码"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "OrderCreateRequest": {
+        "properties": {
+          "receiver_name": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 2,
+            "title": "Receiver Name",
+            "description": "收货人姓名"
+          },
+          "receiver_phone": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 6,
+            "title": "Receiver Phone",
+            "description": "收货电话"
+          },
+          "receiver_address": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 5,
+            "title": "Receiver Address",
+            "description": "收货地址"
+          },
+          "remark": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Remark",
+            "description": "买家备注",
+            "default": ""
+          },
+          "items": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/OrderItemInput"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Items",
+            "description": "直接购买的商品列表；不传则结算购物车中已勾选的商品"
+          }
+        },
+        "type": "object",
+        "required": [
+          "receiver_name",
+          "receiver_phone",
+          "receiver_address"
+        ],
+        "title": "OrderCreateRequest"
+      },
+      "OrderDetailOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "订单ID"
+          },
+          "order_no": {
+            "type": "string",
+            "title": "Order No",
+            "description": "订单号"
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "description": "状态：0待付款 1待发货 2待收货 3已完成 4已取消"
+          },
+          "status_label": {
+            "type": "string",
+            "title": "Status Label",
+            "description": "状态中文名称，由接口层填充",
+            "default": ""
+          },
+          "total_amount": {
+            "type": "string",
+            "title": "Total Amount",
+            "description": "商品总额（元）"
+          },
+          "freight": {
+            "type": "string",
+            "title": "Freight",
+            "description": "运费（元）"
+          },
+          "pay_amount": {
+            "type": "string",
+            "title": "Pay Amount",
+            "description": "实付金额（元）"
+          },
+          "receiver_name": {
+            "type": "string",
+            "title": "Receiver Name",
+            "description": "收货人"
+          },
+          "receiver_phone": {
+            "type": "string",
+            "title": "Receiver Phone",
+            "description": "收货电话"
+          },
+          "receiver_address": {
+            "type": "string",
+            "title": "Receiver Address",
+            "description": "收货地址"
+          },
+          "remark": {
+            "type": "string",
+            "title": "Remark",
+            "description": "买家备注",
+            "default": ""
+          },
+          "item_count": {
+            "type": "integer",
+            "title": "Item Count",
+            "description": "商品种数",
+            "default": 0
+          },
+          "total_quantity": {
+            "type": "integer",
+            "title": "Total Quantity",
+            "description": "商品总件数",
+            "default": 0
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At",
+            "description": "下单时间"
+          },
+          "paid_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid At",
+            "description": "支付时间"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderItemOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "订单明细"
+          },
+          "shipped_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shipped At",
+            "description": "发货时间"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At",
+            "description": "完成时间"
+          },
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At",
+            "description": "取消时间"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_no",
+          "status",
+          "total_amount",
+          "freight",
+          "pay_amount",
+          "receiver_name",
+          "receiver_phone",
+          "receiver_address"
+        ],
+        "title": "OrderDetailOut"
+      },
+      "OrderItemInput": {
+        "properties": {
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id",
+            "description": "商品ID"
+          },
+          "quantity": {
+            "type": "integer",
+            "maximum": 999.0,
+            "minimum": 1.0,
+            "title": "Quantity",
+            "description": "购买数量"
+          }
+        },
+        "type": "object",
+        "required": [
+          "product_id",
+          "quantity"
+        ],
+        "title": "OrderItemInput"
+      },
+      "OrderItemOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "明细ID"
+          },
+          "product_id": {
+            "type": "integer",
+            "title": "Product Id",
+            "description": "商品ID"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name",
+            "description": "下单时的商品名称快照"
+          },
+          "product_image": {
+            "type": "string",
+            "title": "Product Image",
+            "description": "下单时的主图快照",
+            "default": ""
+          },
+          "price": {
+            "type": "string",
+            "title": "Price",
+            "description": "成交单价快照（元）"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity",
+            "description": "数量"
+          },
+          "subtotal": {
+            "type": "string",
+            "title": "Subtotal",
+            "description": "小计（元）"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "product_id",
+          "product_name",
+          "price",
+          "quantity",
+          "subtotal"
+        ],
+        "title": "OrderItemOut"
+      },
+      "OrderOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "订单ID"
+          },
+          "order_no": {
+            "type": "string",
+            "title": "Order No",
+            "description": "订单号"
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "description": "状态：0待付款 1待发货 2待收货 3已完成 4已取消"
+          },
+          "status_label": {
+            "type": "string",
+            "title": "Status Label",
+            "description": "状态中文名称，由接口层填充",
+            "default": ""
+          },
+          "total_amount": {
+            "type": "string",
+            "title": "Total Amount",
+            "description": "商品总额（元）"
+          },
+          "freight": {
+            "type": "string",
+            "title": "Freight",
+            "description": "运费（元）"
+          },
+          "pay_amount": {
+            "type": "string",
+            "title": "Pay Amount",
+            "description": "实付金额（元）"
+          },
+          "receiver_name": {
+            "type": "string",
+            "title": "Receiver Name",
+            "description": "收货人"
+          },
+          "receiver_phone": {
+            "type": "string",
+            "title": "Receiver Phone",
+            "description": "收货电话"
+          },
+          "receiver_address": {
+            "type": "string",
+            "title": "Receiver Address",
+            "description": "收货地址"
+          },
+          "remark": {
+            "type": "string",
+            "title": "Remark",
+            "description": "买家备注",
+            "default": ""
+          },
+          "item_count": {
+            "type": "integer",
+            "title": "Item Count",
+            "description": "商品种数",
+            "default": 0
+          },
+          "total_quantity": {
+            "type": "integer",
+            "title": "Total Quantity",
+            "description": "商品总件数",
+            "default": 0
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At",
+            "description": "下单时间"
+          },
+          "paid_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid At",
+            "description": "支付时间"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_no",
+          "status",
+          "total_amount",
+          "freight",
+          "pay_amount",
+          "receiver_name",
+          "receiver_phone",
+          "receiver_address"
+        ],
+        "title": "OrderOut"
+      },
+      "PageData_OrderOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/OrderOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "当前页数据"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "总条数",
+            "default": 0
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page",
+            "description": "当前页码，从 1 开始",
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size",
+            "description": "每页条数",
+            "default": 10
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages",
+            "description": "总页数",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "PageData[OrderOut]"
+      },
+      "PageData_ProductOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductOut"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "当前页数据"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "总条数",
+            "default": 0
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page",
+            "description": "当前页码，从 1 开始",
+            "default": 1
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size",
+            "description": "每页条数",
+            "default": 10
+          },
+          "pages": {
+            "type": "integer",
+            "title": "Pages",
+            "description": "总页数",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "PageData[ProductOut]"
+      },
+      "ProductCreateRequest": {
+        "properties": {
+          "category_id": {
+            "type": "integer",
+            "title": "Category Id",
+            "description": "所属类别ID，必须是已存在的二级或一级分类"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "description": "商品名称"
+          },
+          "subtitle": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Subtitle",
+            "description": "副标题/卖点",
+            "default": ""
+          },
+          "main_image": {
+            "type": "string",
+            "maxLength": 255,
+            "title": "Main Image",
+            "description": "主图地址",
+            "default": ""
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 99999999.99,
+                "minimum": 0.01
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Price",
+            "description": "售价（元）"
+          },
+          "original_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 99999999.99,
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Original Price",
+            "description": "划线价（元）",
+            "default": "0.00"
+          },
+          "stock": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Stock",
+            "description": "初始库存",
+            "default": 0
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 16,
+            "title": "Unit",
+            "description": "计量单位",
+            "default": "件"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "图文详情",
+            "default": ""
+          },
+          "status": {
+            "type": "integer",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Status",
+            "description": "状态：1=在售，0=下架",
+            "default": 1
+          }
+        },
+        "type": "object",
+        "required": [
+          "category_id",
+          "name",
+          "price"
+        ],
+        "title": "ProductCreateRequest"
+      },
+      "ProductDetailOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "商品ID"
+          },
+          "category_id": {
+            "type": "integer",
+            "title": "Category Id",
+            "description": "所属类别ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "商品名称"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle",
+            "description": "副标题",
+            "default": ""
+          },
+          "main_image": {
+            "type": "string",
+            "title": "Main Image",
+            "description": "主图地址",
+            "default": ""
+          },
+          "price": {
+            "type": "string",
+            "title": "Price",
+            "description": "售价（元）"
+          },
+          "original_price": {
+            "type": "string",
+            "title": "Original Price",
+            "description": "划线价（元）",
+            "default": "0.00"
+          },
+          "stock": {
+            "type": "integer",
+            "title": "Stock",
+            "description": "可售库存"
+          },
+          "sales": {
+            "type": "integer",
+            "title": "Sales",
+            "description": "累计销量"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "description": "计量单位"
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "description": "状态：1=在售，0=下架"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "所属类别名称"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail",
+            "description": "图文详情",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "category_id",
+          "name",
+          "price",
+          "stock",
+          "sales",
+          "unit",
+          "status"
+        ],
+        "title": "ProductDetailOut"
+      },
+      "ProductOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "商品ID"
+          },
+          "category_id": {
+            "type": "integer",
+            "title": "Category Id",
+            "description": "所属类别ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "商品名称"
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle",
+            "description": "副标题",
+            "default": ""
+          },
+          "main_image": {
+            "type": "string",
+            "title": "Main Image",
+            "description": "主图地址",
+            "default": ""
+          },
+          "price": {
+            "type": "string",
+            "title": "Price",
+            "description": "售价（元）"
+          },
+          "original_price": {
+            "type": "string",
+            "title": "Original Price",
+            "description": "划线价（元）",
+            "default": "0.00"
+          },
+          "stock": {
+            "type": "integer",
+            "title": "Stock",
+            "description": "可售库存"
+          },
+          "sales": {
+            "type": "integer",
+            "title": "Sales",
+            "description": "累计销量"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "description": "计量单位"
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "description": "状态：1=在售，0=下架"
+          },
+          "category_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Name",
+            "description": "所属类别名称"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "category_id",
+          "name",
+          "price",
+          "stock",
+          "sales",
+          "unit",
+          "status"
+        ],
+        "title": "ProductOut"
+      },
+      "ProductUpdateRequest": {
+        "properties": {
+          "category_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "subtitle": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subtitle"
+          },
+          "main_image": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Main Image"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.01
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Price"
+          },
+          "original_price": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Price"
+          },
+          "stock": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stock"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "title": "ProductUpdateRequest"
+      },
+      "RegisterRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 4,
+            "title": "Username",
+            "description": "登录名，4-32 位字母或数字"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 6,
+            "title": "Password",
+            "description": "登录密码，6-64 位"
+          },
+          "nickname": {
+            "type": "string",
+            "maxLength": 32,
+            "title": "Nickname",
+            "description": "昵称，留空则取登录名",
+            "default": ""
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone",
+            "description": "手机号"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email",
+            "description": "邮箱"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "RegisterRequest"
+      },
+      "TokenOut": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token",
+            "description": "JWT 访问令牌，放到 Authorization: Bearer <token> 里"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "description": "令牌类型",
+            "default": "bearer"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In",
+            "description": "有效期，单位秒"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserOut",
+            "description": "登录用户信息"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "expires_in",
+          "user"
+        ],
+        "title": "TokenOut"
+      },
+      "UserOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "用户ID"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username",
+            "description": "登录名"
+          },
+          "nickname": {
+            "type": "string",
+            "title": "Nickname",
+            "description": "昵称"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone",
+            "description": "手机号"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email",
+            "description": "邮箱"
+          },
+          "avatar": {
+            "type": "string",
+            "title": "Avatar",
+            "description": "头像地址",
+            "default": ""
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "description": "角色：user=普通用户，admin=管理员",
+            "default": "user"
+          },
+          "status": {
+            "type": "integer",
+            "title": "Status",
+            "description": "状态：1=正常，0=禁用"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At",
+            "description": "注册时间"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "nickname",
+          "status"
+        ],
+        "title": "UserOut"
+      },
+      "UserUpdateRequest": {
+        "properties": {
+          "nickname": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nickname"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar"
+          }
+        },
+        "type": "object",
+        "title": "UserUpdateRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "description": "登录后拿到的 JWT",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "api/v1/auth/login"
+          }
+        }
+      },
+      "BearerToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "登录接口返回的 access_token"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "用户与登录",
+      "description": "注册、登录换取 JWT、查看和修改个人资料。"
+    },
+    {
+      "name": "商品类别",
+      "description": "两级分类的查询与维护（写操作需管理员）。"
+    },
+    {
+      "name": "商品",
+      "description": "商品列表分页搜索、详情，以及上架/改价/下架。"
+    },
+    {
+      "name": "购物车",
+      "description": "加购、改数量、勾选、移除与清空。"
+    },
+    {
+      "name": "订单",
+      "description": "下单扣库存、订单查询与状态流转（付款/发货/收货/取消）。"
+    }
+  ]
+}
