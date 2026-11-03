@@ -1,8 +1,8 @@
-# E-Business Platform · B2C 商城后端服务
+# E-Business Platform · B2C 商城
 
-基于 **FastAPI + SQLAlchemy 2.0 + MySQL 8.0** 实现的 B2C 商城后端，覆盖
-用户、商品分类、商品、购物车、订单五条核心业务链路，提供统一的 JSON 接口与
-自动生成的交互式文档。
+**后端** FastAPI + SQLAlchemy 2.0 + MySQL 8.0，**前端** Vue 3 + Vite + Element Plus，
+覆盖用户、商品分类、商品、购物车、订单五条核心业务链路。前端把 17 个接口全部做成了可点
+的页面（买家端 7 页 + 管理后台 3 页）。
 
 - 仓库地址：<https://github.com/6jbw6/E-Business-Platform>
 - 功能设计文档（需求分析 / 功能图 / ER 图 / 接口设计）：[docs/功能设计文档.md](docs/功能设计文档.md)
@@ -16,7 +16,8 @@
 - **下单不超卖**：`SELECT ... FOR UPDATE` 按商品主键升序加行锁，扣库存与写订单同事务提交
 - **订单价格快照**：明细表存下单瞬间的商品名与单价，事后改价不影响历史订单
 - **状态机校验**：订单只能沿「待付款 → 待发货 → 待收货 → 已完成」流转，非法流转返回 400
-- **端到端冒烟脚本**：一条命令跑完 26 项正向与负向用例，逐项打印 PASS/FAIL
+- **端到端冒烟脚本**：一条命令跑完 28 项正向与负向用例，逐项打印 PASS/FAIL
+- **Vue 3 前端**：买家端与管理员后台两套布局，路由守卫按角色分流，金额按字符串展示不做浮点运算
 
 ## 技术栈
 
@@ -29,6 +30,10 @@
 | 数据校验 | Pydantic v2 | 请求/响应模型 |
 | 配置 | pydantic-settings | `.env` 加载 |
 | 鉴权 | PyJWT + bcrypt | 令牌签发与密码散列 |
+| 前端框架 | Vue 3 + Vite 6 | 页面与构建 |
+| 前端路由/状态 | vue-router 4 + Pinia 2 | 页面跳转与登录态、购物车 |
+| UI 组件 | Element Plus 2.9 | 表格、表单、分页、消息提示 |
+| HTTP 客户端 | axios | 统一注入令牌、拆响应信封 |
 
 ## 目录结构
 
@@ -46,6 +51,17 @@
 │   │   ├── models/            # 6 张表的 ORM 模型
 │   │   └── schemas/           # Pydantic 请求/响应模型
 │   └── __init__.py
+├── frontend/
+│   ├── src/
+│   │   ├── api/               # axios 实例与各业务请求封装
+│   │   ├── stores/            # Pinia：登录态与购物车
+│   │   ├── router/            # 路由表与 requiresAuth / requiresAdmin 守卫
+│   │   ├── layouts/           # 买家端顶栏布局、管理后台侧栏布局
+│   │   ├── views/             # 买家端 7 页 + admin/ 3 页
+│   │   ├── components/        # ProductCard 等
+│   │   └── utils/             # 金额与时间展示、富文本降级
+│   ├── vite.config.js         # /api 与 /health 代理到 127.0.0.1:8000
+│   └── package.json
 ├── docs/
 │   ├── 功能设计文档.md         # 需求分析、功能图、ER 图、接口设计
 │   ├── 接口文档.md             # 逐接口示例
@@ -109,6 +125,41 @@ uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
 ```bash
 python -m scripts.smoke_test --base http://127.0.0.1:8000
 ```
+
+### 6. 启动前端
+
+后端跑起来后，另开一个终端：
+
+```bash
+cd frontend
+npm install            # 国内可加 --registry=https://registry.npmmirror.com
+npm run dev            # http://127.0.0.1:5173
+```
+
+`vite.config.js` 已把 `/api` 与 `/health` 代理到 `127.0.0.1:8000`，所以前端不用配跨域，
+改后端端口时同步改 `VITE_PROXY_TARGET` 即可。生产构建 `npm run build` 产物在 `frontend/dist`。
+
+> 提示：后端用 `--reload` 调试时请加 `--reload-dir backend`，否则 `npm install`、
+> `npm run build` 改动 `frontend/` 里的文件会让后端反复重启，页面会短暂显示"后端未连接"。
+
+### 前端页面清单
+
+| 页面 | 路径 | 对应接口 |
+| --- | --- | --- |
+| 登录 / 注册 | `/login` | `POST /auth/login`、`POST /auth/register` |
+| 商品首页 | `/` | `GET /categories/tree`、`GET /products` |
+| 商品详情 | `/products/:id` | `GET /products/{id}` |
+| 购物车 | `/cart` | `GET/POST/PUT/DELETE /cart` |
+| 确认订单 | `/checkout` | `POST /orders`（结算勾选或直接购买） |
+| 我的订单 | `/orders` | `GET /orders` |
+| 订单详情 | `/orders/:id` | `GET /orders/{id}`、支付/收货/取消 |
+| 个人资料 | `/profile` | `GET/PUT /auth/me` |
+| 分类管理 | `/admin/categories` | 分类增删改（管理员） |
+| 商品管理 | `/admin/products` | 商品发布/改价/上下架（管理员） |
+| 订单发货 | `/admin/orders` | `GET /orders?all=true`、`PUT /orders/{id}/shipment` |
+
+未登录访问购物车/订单会跳登录页并记住来源，登录后自动回跳；非管理员访问 `/admin/**`
+会被送回首页。
 
 ### 演示账号
 

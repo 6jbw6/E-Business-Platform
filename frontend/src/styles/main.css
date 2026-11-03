@@ -1,0 +1,73 @@
+:root {
+  --page-max-width: 1200px;
+  --brand-color: #e02e24;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+  background: #f5f6f8;
+  color: #303133;
+}
+
+.page-container {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.price {
+  color: var(--brand-color);
+  font-weight: 600;
+}
+
+.price-large {
+  font-size: 22px;
+}
+
+.text-muted {
+  color: #909399;
+  font-size: 13px;
+}
+
+.product-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: #f0f2f5;
+  border-radius: 4px;
+}
+
+.thumb-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(135deg, #e8eaf0, #f7f8fa);
+  color: #a8abb2;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.toolbar-card {
+  margin-bottom: 16px;
+}
+
+.mb-16 {
+  margin-bottom: 16px;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
