@@ -11,7 +11,6 @@
                 <el-avatar :size="72" :src="user.profile?.avatar" shape="circle">
                   {{ user.displayName.slice(0, 1) }}
                 </el-avatar>
-                <div class="avatar-mask"><el-icon><Camera /></el-icon><span>更换</span></div>
               </div>
               <input
                 ref="fileInputRef"
@@ -48,7 +47,6 @@
             </el-descriptions-item>
             <el-descriptions-item label="注册时间">{{ dateTime(user.profile?.created_at) }}</el-descriptions-item>
           </el-descriptions>
-          <el-button class="logout-btn" type="danger" plain @click="onLogout">退出登录</el-button>
         </el-card>
       </el-col>
     </el-row>
@@ -76,9 +74,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Camera } from '@element-plus/icons-vue'
 import { CircleStencil, Cropper } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
 
@@ -88,7 +84,6 @@ import { dateTime } from '@/utils/format'
 const MAX_PICK_BYTES = 5 * 1024 * 1024
 const AVATAR_OUTPUT_SIZE = 256
 
-const router = useRouter()
 const user = useUserStore()
 
 const formRef = ref()
@@ -198,12 +193,6 @@ async function autoSave(field) {
   }
 }
 
-function onLogout() {
-  user.logout()
-  ElMessage.success('已退出登录')
-  router.push({ name: 'login' })
-}
-
 onMounted(async () => {
   if (!user.profile) {
     await user.loadProfile().catch(() => {})
@@ -226,11 +215,6 @@ onMounted(async () => {
   margin-bottom: 16px;
 }
 
-.logout-btn {
-  width: 100%;
-  margin-top: 16px;
-}
-
 .avatar-pick {
   position: relative;
   width: 72px;
@@ -242,27 +226,6 @@ onMounted(async () => {
 .avatar-pick .el-avatar {
   background: var(--brand-color);
   color: #fff;
-}
-
-/* 悬停才浮出「更换」遮罩，平时保持一张干净的圆头像 */
-.avatar-mask {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  font-size: 12px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.avatar-pick:hover .avatar-mask {
-  opacity: 1;
 }
 
 .hidden-input {

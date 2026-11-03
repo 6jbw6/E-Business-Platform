@@ -16,8 +16,8 @@ from backend.app.models import Base, Category, Product, User
 
 # (id, username, 明文密码, 昵称, 手机号, 邮箱, 角色)
 SEED_USERS: list[tuple[int, str, str, str, str, str, str]] = [
-    (1, "admin", "Admin@123456", "平台管理员", "13800000000", "admin@example.com", "admin"),
-    (2, "student01", "Student@123", "演示买家", "13800001111", "student01@example.com", "user"),
+    (1, "admin", "123456", "平台管理员", "13800000000", "admin@example.com", "admin"),
+    (2, "student01", "123456", "演示买家", "13800001111", "student01@example.com", "user"),
 ]
 
 # (id, 名称, 父ID, 层级, 图标, 排序)

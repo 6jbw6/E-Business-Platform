@@ -137,9 +137,9 @@ watch(
 }
 
 .search-box {
+  /* 不写上界，搜索框就占满 logo 与导航之间的整行 */
   flex: 1 1 240px;
   min-width: 180px;
-  max-width: 420px;
 }
 
 .header-nav {

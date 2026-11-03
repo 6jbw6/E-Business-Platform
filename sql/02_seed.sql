@@ -4,8 +4,8 @@
 -- 等价做法：python -m scripts.init_db（由后端代码幂等播种）
 --
 -- 账号说明（密码均为 bcrypt 散列，明文只写在这里供演示登录）：
---   管理员  admin      / Admin@123456
---   普通用户 student01 / Student@123
+--   管理员  admin      / 123456
+--   普通用户 student01 / 123456
 -- ---------------------------------------------------------------------------
 
 USE `ebusiness_mall`;
@@ -16,9 +16,9 @@ SET NAMES utf8mb4;
 INSERT IGNORE INTO `users`
     (`id`, `username`, `password_hash`, `nickname`, `phone`, `email`, `avatar`, `role`, `status`)
 VALUES
-    (1, 'admin', '$2b$10$udltE22GvzOQw7rIEs.9Futc1gB3FhhDMHuEapfXbww8ILH9UW./u',
+    (1, 'admin', '$2b$10$uMsiB7hCeoIW0Viax2xi3ez9avXMdaeEKE8lufpi0mSJddgXom3ie',
      '平台管理员', '13800000000', 'admin@example.com', '', 'admin', 1),
-    (2, 'student01', '$2b$10$9ZPrqaj6BhVF./pcYXnnROaU5HMP44msUoxYMCwadBINtnnUnR3Ju',
+    (2, 'student01', '$2b$10$uMsiB7hCeoIW0Viax2xi3ez9avXMdaeEKE8lufpi0mSJddgXom3ie',
      '演示买家', '13800001111', 'student01@example.com', '', 'user', 1);
 
 -- 商品类别表（一级 1-3，二级 11-32） ----------------------------------

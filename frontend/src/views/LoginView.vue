@@ -2,7 +2,6 @@
   <div class="login-page">
     <div class="login-card">
       <h1 class="login-title">B2C 商城</h1>
-      <p class="login-subtitle">后端接口课程演示，登录后可使用购物车与下单</p>
 
       <el-tabs v-model="tab">
         <el-tab-pane label="登录" name="login">
@@ -15,12 +14,6 @@
             </el-form-item>
             <el-button type="primary" class="submit-btn" :loading="submitting" @click="onLogin">登录</el-button>
           </el-form>
-
-          <el-divider>演示账号（点击直接填入）</el-divider>
-          <div class="quick-fill">
-            <el-tag class="quick-tag" effect="plain" @click="fill('student01', 'Student@123')">普通用户 student01</el-tag>
-            <el-tag class="quick-tag" type="warning" effect="plain" @click="fill('admin', 'Admin@123456')">管理员 admin</el-tag>
-          </div>
         </el-tab-pane>
 
         <el-tab-pane label="注册" name="register">
@@ -83,12 +76,6 @@ const registerRules = {
   phone: [{ pattern: /^\d*$/, message: '手机号只能是数字', trigger: 'blur' }],
 }
 
-function fill(username, password) {
-  tab.value = 'login'
-  loginForm.username = username
-  loginForm.password = password
-}
-
 function goAfterLogin() {
   const redirect = route.query.redirect
   router.replace(typeof redirect === 'string' ? redirect : { name: 'home' })
@@ -135,7 +122,7 @@ async function onRegister() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #e02e24 0%, #f76b1d 100%);
+  background: #fff;
   padding: 24px;
 }
 
@@ -145,33 +132,16 @@ async function onRegister() {
   background: #fff;
   border-radius: 10px;
   padding: 28px 32px 32px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
 }
 
 .login-title {
-  margin: 0;
+  margin: 0 0 18px;
   font-size: 24px;
   color: var(--brand-color);
-}
-
-.login-subtitle {
-  margin: 6px 0 18px;
-  font-size: 13px;
-  color: #909399;
 }
 
 .submit-btn {
   width: 100%;
   margin-top: 4px;
-}
-
-.quick-fill {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.quick-tag {
-  cursor: pointer;
 }
 </style>

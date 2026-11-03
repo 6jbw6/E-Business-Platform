@@ -22,7 +22,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 ADMIN_USER = "admin"
-ADMIN_PASS = "Admin@123456"
+ADMIN_PASS = "123456"
 
 _results: list[tuple[str, bool, str]] = []
 

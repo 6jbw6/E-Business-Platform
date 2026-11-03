@@ -165,8 +165,8 @@ npm run dev            # http://127.0.0.1:5173
 
 | 角色 | 登录名 | 密码 |
 | --- | --- | --- |
-| 管理员 | `admin` | `Admin@123456` |
-| 普通用户 | `student01` | `Student@123` |
+| 管理员 | `admin` | `123456` |
+| 普通用户 | `student01` | `123456` |
 
 仅用于本地演示，公网部署前请删除或改密。
 
@@ -176,7 +176,7 @@ npm run dev            # http://127.0.0.1:5173
 # 登录拿令牌
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"student01","password":"Student@123"}' \
+  -d '{"username":"student01","password":"123456"}' \
   | python -c "import sys,json;print(json.load(sys.stdin)['data']['access_token'])")
 
 # 加购 -> 下单
