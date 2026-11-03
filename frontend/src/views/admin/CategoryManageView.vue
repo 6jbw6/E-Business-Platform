@@ -35,11 +35,17 @@
         </el-table-column>
         <el-table-column label="操作" width="230" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="row.level === 1" text type="primary" size="small" @click="openCreate(row)">
-              加子分类
-            </el-button>
-            <el-button text size="small" @click="openEdit(row)">编辑</el-button>
-            <el-button text type="danger" size="small" @click="onDelete(row)">删除</el-button>
+            <div class="op-cell">
+              <el-button v-if="row.level === 1" text type="primary" size="small" @click="openCreate(row)">
+                加子分类
+              </el-button>
+              <!-- 二级分类没有「加子分类」，但占位仍要留，否则后面两个按钮会整体左移 -->
+              <el-button v-else text size="small" class="op-placeholder" tabindex="-1" aria-hidden="true">
+                加子分类
+              </el-button>
+              <el-button text size="small" @click="openEdit(row)">编辑</el-button>
+              <el-button text type="danger" size="small" @click="onDelete(row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -188,5 +194,22 @@ onMounted(load)
   align-items: center;
   gap: 18px;
   flex-wrap: wrap;
+}
+
+/* 三个按钮各占固定宽度，一级/二级行的「编辑」「删除」才能竖向对齐 */
+.op-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-cell :deep(.el-button) {
+  margin-left: 0;
+  min-width: 62px;
+}
+
+.op-placeholder {
+  visibility: hidden;
+  pointer-events: none;
 }
 </style>

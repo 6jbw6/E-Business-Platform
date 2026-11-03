@@ -19,6 +19,12 @@
           <span>订单发货</span>
         </el-menu-item>
       </el-menu>
+      <div class="aside-foot">
+        <el-button text class="back-home" @click="router.push({ name: 'home' })">
+          <el-icon><Back /></el-icon>
+          返回商城首页
+        </el-button>
+      </div>
     </el-aside>
 
     <el-container>
@@ -26,10 +32,6 @@
         <span class="admin-title">{{ route.meta.title }}</span>
         <div class="admin-actions">
           <el-tag type="warning" effect="plain" size="small">管理员：{{ user.displayName }}</el-tag>
-          <el-button text @click="router.push({ name: 'home' })">
-            <el-icon><Back /></el-icon>
-            返回商城首页
-          </el-button>
           <el-button text type="danger" @click="onLogout">退出登录</el-button>
         </div>
       </el-header>
@@ -65,6 +67,8 @@ function onLogout() {
 .admin-aside {
   background: #263445;
   color: #fff;
+  display: flex;
+  flex-direction: column;
 }
 
 .aside-brand {
@@ -79,11 +83,26 @@ function onLogout() {
 
 .aside-menu {
   border-right: none;
-  background: transparent;
+  flex: 1;
   --el-menu-bg-color: transparent;
   --el-menu-text-color: #c0c4cc;
   --el-menu-hover-bg-color: rgba(255, 255, 255, 0.08);
   --el-menu-active-color: #ffd04b;
+}
+
+/* 菜单撑满剩余高度后，这个块自然贴在侧边栏左下角 */
+.aside-foot {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.back-home {
+  color: #c0c4cc;
+  padding: 0;
+}
+
+.back-home:hover {
+  color: #ffd04b;
 }
 
 .admin-header {

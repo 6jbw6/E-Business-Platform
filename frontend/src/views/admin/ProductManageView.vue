@@ -11,7 +11,7 @@
           @clear="reload(1)"
         />
         <el-select v-model="filters.category_id" placeholder="全部分类" clearable style="width: 180px">
-          <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+          <el-option v-for="c in mainCategories" :key="c.id" :label="c.name" :value="c.id" />
         </el-select>
         <el-switch v-model="filters.show_all" active-text="含已下架" />
         <el-button type="primary" @click="reload(1)">查询</el-button>
@@ -93,7 +93,10 @@
       <el-form ref="formRef" :model="form" :rules="rules" label-width="96px">
         <el-form-item label="所属分类" prop="category_id">
           <el-select v-model="form.category_id" placeholder="请选择分类" style="width: 100%">
-            <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+            <el-option-group v-for="group in categoryGroups" :key="group.id" :label="group.name">
+              <el-option :value="group.id" :label="`${group.name}（直接放一级下）`" />
+              <el-option v-for="child in group.children" :key="child.id" :value="child.id" :label="child.name" />
+            </el-option-group>
           </el-select>
         </el-form-item>
         <el-form-item label="商品名称" prop="name">
@@ -148,7 +151,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 
@@ -163,6 +166,17 @@ const pageSize = ref(10)
 const loading = ref(false)
 
 const filters = reactive({ keyword: '', category_id: undefined, show_all: true })
+
+// 筛选只列一级分类：后端传一级 ID 会级联它下面所有二级分类的商品
+const mainCategories = computed(() => categories.value.filter((c) => c.level === 1))
+
+// 发布/编辑仍要能选到二级，否则会把已有商品的分类从二级挪到一级
+const categoryGroups = computed(() =>
+  mainCategories.value.map((root) => ({
+    ...root,
+    children: categories.value.filter((c) => c.parent_id === root.id),
+  })),
+)
 
 const dialogVisible = ref(false)
 const saving = ref(false)
@@ -183,8 +197,7 @@ const form = reactive({
 })
 
 const rules = {
-  category_id: [{ required: true, message: '请选择所属分类', trigger: 'change' }],
-  name: [
+  category_id: [{ required: true, message: '请选择所属分类', trigger: 'change' }],  name: [
     { required: true, message: '请输入商品名称', trigger: 'blur' },
     { max: 120, message: '名称不超过 120 位', trigger: 'blur' },
   ],
