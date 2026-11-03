@@ -1,5 +1,5 @@
 <template>
-  <el-card class="product-card" shadow="hover" :body-style="{ padding: '12px' }">
+  <el-card class="product-card" shadow="hover" :body-style="{ padding: '12px', overflow: 'hidden' }">
     <div class="thumb-wrap" @click="goDetail">
       <el-image :src="product.main_image" fit="cover" class="product-thumb">
         <template #error>
@@ -124,6 +124,8 @@ async function onAddToCart() {
   display: flex;
   align-items: baseline;
   gap: 8px;
+  /* 划线价在窄卡里换到第二行，而不是把整行撑出横向滚动条 */
+  flex-wrap: wrap;
 }
 
 .origin-price {
@@ -135,6 +137,8 @@ async function onAddToCart() {
 .product-meta {
   display: flex;
   justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
   margin: 6px 0 10px;
 }
 
@@ -144,7 +148,16 @@ async function onAddToCart() {
 }
 
 .product-actions .el-button {
-  flex: 1;
+  /* min-width: 0 才能让 flex 收缩按钮，否则按钮内容宽度就是下限 */
+  flex: 1 1 auto;
+  min-width: 0;
   margin-left: 0;
+}
+
+.product-actions :deep(.el-button > span) {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
