@@ -4,7 +4,9 @@
 # 用法：
 #   1) 把项目放到服务器目录，例如 /opt/ebusiness
 #   2) 在项目根目录复制 .env.example 为 .env，填好 MySQL 与 JWT 配置
-#   3) bash scripts/deploy_ubuntu.sh [端口]      # 端口默认 8000
+#   3) 要连前端页面一起上线：在本地 cd frontend && npm run build，
+#      再把 frontend/dist 传到服务器的 /opt/ebusiness/frontend/dist（服务器不需要装 Node）
+#   4) bash scripts/deploy_ubuntu.sh [端口]      # 端口默认 8000
 #
 # 脚本是幂等的，重复执行只会更新依赖并重启服务。
 set -euo pipefail
@@ -33,6 +35,13 @@ echo "==> 安装依赖（使用清华镜像加速）"
 echo "==> 建库建表并播种演示数据"
 .venv/bin/python -m scripts.init_db
 
+if [ -f frontend/dist/index.html ]; then
+    echo "==> 检测到前端构建产物 frontend/dist，页面与接口由同一个 uvicorn 一起提供"
+else
+    echo "==> 未找到 frontend/dist/index.html：本次只提供接口，不托管页面"
+    echo "    要页面的话，在本地 cd frontend && npm run build，再把 frontend/dist 整个目录传到服务器项目里"
+fi
+
 echo "==> 停掉占用 $PORT 的旧进程"
 pkill -f "uvicorn backend.app.main:app --port $PORT" 2>/dev/null || true
 sleep 1
@@ -46,11 +55,22 @@ nohup .venv/bin/uvicorn backend.app.main:app \
     >> logs/uvicorn.log 2>&1 &
 
 sleep 3
-if curl -fsS "http://127.0.0.1:$PORT/health" >/dev/null; then
-    echo "==> 部署成功，健康检查通过"
-    echo "    接口文档： http://<公网IP>:$PORT/docs"
-    echo "    日志文件： $APP_DIR/logs/uvicorn.log"
-else
+if ! curl -fsS "http://127.0.0.1:$PORT/health" >/dev/null; then
     echo "==> 健康检查失败，请查看日志：tail -n 50 $APP_DIR/logs/uvicorn.log" >&2
     exit 1
 fi
+echo "==> 健康检查通过"
+
+if [ -f frontend/dist/index.html ]; then
+    if curl -fsS "http://127.0.0.1:$PORT/" | grep -q 'id="app"'; then
+        echo "==> 页面自检通过（根路径返回 SPA 外壳）"
+    else
+        echo "==> 根路径没拿到页面骨架，请检查日志与 frontend/dist 内容" >&2
+        exit 1
+    fi
+    echo "    商城首页： http://<公网IP>:$PORT/"
+else
+    echo "    本次只部署接口，商城页面请用本地 npm run dev"
+fi
+echo "    接口文档： http://<公网IP>:$PORT/docs"
+echo "    日志文件： $APP_DIR/logs/uvicorn.log"

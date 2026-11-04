@@ -137,8 +137,12 @@ npm install            # 国内可加 --registry=https://registry.npmmirror.com
 npm run dev            # http://127.0.0.1:5173
 ```
 
-`vite.config.js` 已把 `/api` 与 `/health` 代理到 `127.0.0.1:8000`，所以前端不用配跨域，
-改后端端口时同步改 `VITE_PROXY_TARGET` 即可。生产构建 `npm run build` 产物在 `frontend/dist`。
+`vite.config.js` 已把 `/api`、`/uploads` 与 `/health` 代理到 `127.0.0.1:8000`，所以前端不用配跨域，
+改后端端口时同步改 `VITE_PROXY_TARGET` 即可。
+
+不想开两个终端也可以直接走构建产物：`npm run build` 生成 `frontend/dist` 后，后端启动时检测到
+`frontend/dist/index.html` 就把页面和接口一起提供，访问 `http://127.0.0.1:8000/` 即是商城首页，
+`/api/v1/*`、`/docs`、`/uploads/*` 不受影响（这条路径同样适用于公网部署，见下节）。
 
 > 提示：后端用 `--reload` 调试时请加 `--reload-dir backend`，否则 `npm install`、
 > `npm run build` 改动 `frontend/` 里的文件会让后端反复重启，页面会短暂显示"后端未连接"。
@@ -192,15 +196,28 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/orders \
 
 ## 公网部署（uvicorn，不使用 docker 与 nginx）
 
+页面和接口由同一个 uvicorn 进程提供，服务器不需要装 Node，也不需要 nginx。
+
+第一步在本地构建前端，再把产物传到服务器（`dist` 不进版本库，所以每次改完前端都要重传）：
+
 ```bash
-# 服务器上，项目放在 /opt/ebusiness
+cd frontend && npm run build
+scp -r frontend/dist ubuntu@<公网IP>:/opt/ebusiness/frontend/
+```
+
+第二步在服务器上更新代码并拉起服务（首次部署先 `cp .env.example .env` 并填好 MySQL 配置）：
+
+```bash
 cd /opt/ebusiness
-cp .env.example .env && vi .env
+git pull
 bash scripts/deploy_ubuntu.sh 8000
 ```
 
-脚本会装依赖、建库播种、后台拉起 uvicorn 并自检 `/health`。
-云安全组需放行入方向 TCP `8000`；完成后访问 `http://<公网IP>:8000/docs`。
+脚本会装依赖、建库播种、后台启动 uvicorn 并自检 `/health`；检测到 `frontend/dist/index.html`
+时额外自检根路径能否拿到页面骨架。云安全组需放行入方向 TCP `8000`。
+完成后访问 `http://<公网IP>:8000/` 就是商城，`http://<公网IP>:8000/docs` 是接口文档。
+
+用户在页面上传的头像与商品主图落在服务器的 `uploads/` 目录（同样不进版本库），换机器时需单独备份。
 
 ## 数据库表
 

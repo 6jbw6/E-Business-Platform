@@ -10,9 +10,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from backend.app.api.router import api_router
-from backend.app.core.config import settings
+from backend.app.core.config import PROJECT_ROOT, settings
 from backend.app.core.exceptions import register_exception_handlers
 from backend.app.core.storage import upload_root
 from backend.app.db.session import engine
@@ -33,6 +34,26 @@ B2C 商城后端接口。所有业务接口统一挂在 `/api/v1` 下，返回�
 **鉴权方式**：先调用 `/api/v1/auth/login` 拿到 `access_token`，
 后续请求头带上 `Authorization: Bearer <token>`（点右上角 Authorize 按钮可直接粘贴）。
 """
+
+
+class SPAStaticFiles(StaticFiles):
+    """托管 Vue 构建产物：history 路由刷新时路径没有对应文件，就回 index.html 交给前端路由。
+
+    以后端前缀开头的路径不做这个兜底，仍然返回 404，免得接口地址写错时拿到一个 HTML。
+    """
+
+    async def get_response(self, path: str, scope):
+        is_api_path = scope["path"].startswith(settings.api_prefix)
+        try:
+            response = await super().get_response(path, scope)
+        except StarletteHTTPException as exc:
+            if is_api_path or exc.status_code != 404:
+                raise
+            return await super().get_response("index.html", scope)
+
+        if response.status_code == 404 and not is_api_path:
+            return await super().get_response("index.html", scope)
+        return response
 
 
 @asynccontextmanager
@@ -77,15 +98,6 @@ def create_app() -> FastAPI:
         name="uploads",
     )
 
-    @app.get("/", include_in_schema=False)
-    async def index() -> dict[str, str]:
-        return {
-            "service": settings.app_name,
-            "version": settings.app_version,
-            "docs": "/docs",
-            "api_prefix": settings.api_prefix,
-        }
-
     @app.get("/health", response_model=ApiResponse[HealthOut], tags=["服务状态"], summary="健康检查")
     async def health() -> ApiResponse[HealthOut]:
         try:
@@ -97,6 +109,22 @@ def create_app() -> FastAPI:
         return ApiResponse(
             data=HealthOut(status="up", database=database, version=settings.app_version)
         )
+
+    # 前端构建产物存在就由同一个 uvicorn 托管，挂载必须排在所有后端路由之后
+    dist_dir = PROJECT_ROOT / settings.frontend_dist
+    if (dist_dir / "index.html").is_file():
+        app.mount("/", SPAStaticFiles(directory=str(dist_dir), html=True), name="spa")
+    else:
+
+        @app.get("/", include_in_schema=False)
+        async def index() -> dict[str, str]:
+            return {
+                "service": settings.app_name,
+                "version": settings.app_version,
+                "docs": "/docs",
+                "api_prefix": settings.api_prefix,
+                "frontend": f"未找到 {settings.frontend_dist}/index.html，页面请用 npm run dev 或 npm run build",
+            }
 
     @app.middleware("http")
     async def security_headers(request: Request, call_next):

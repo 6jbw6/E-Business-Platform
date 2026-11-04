@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     upload_url_prefix: str = "/uploads"
     max_upload_bytes: int = 2 * 1024 * 1024
 
+    # 前端构建产物：目录里有 index.html 时，页面和接口由同一个 uvicorn 一起提供
+    frontend_dist: str = "frontend/dist"
+
     @property
     def sqlalchemy_uri(self) -> str:
         if self.database_url:
