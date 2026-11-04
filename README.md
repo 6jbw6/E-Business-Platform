@@ -1,7 +1,7 @@
 # E-Business Platform · B2C 商城
 
 **后端** FastAPI + SQLAlchemy 2.0 + MySQL 8.0，**前端** Vue 3 + Vite + Element Plus，
-覆盖用户、商品分类、商品、购物车、订单五条核心业务链路。前端把 17 个接口全部做成了可点
+覆盖用户、商品分类、商品、购物车、订单五条核心业务链路。前端把 18 个接口全部做成了可点
 的页面（买家端 7 页 + 管理后台 3 页）。
 
 - 仓库地址：<https://github.com/6jbw6/E-Business-Platform>
@@ -60,8 +60,9 @@
 │   │   ├── views/             # 买家端 7 页 + admin/ 3 页
 │   │   ├── components/        # ProductCard 等
 │   │   └── utils/             # 金额与时间展示、富文本降级
-│   ├── vite.config.js         # /api 与 /health 代理到 127.0.0.1:8000
+│   ├── vite.config.js         # /api、/uploads 与 /health 代理到 127.0.0.1:8000
 │   └── package.json
+├── uploads/                   # 运行时落盘的头像与商品主图（已 gitignore，由 StaticFiles 暴露）
 ├── docs/
 │   ├── 功能设计文档.md         # 需求分析、功能图、ER 图、接口设计
 │   ├── 接口文档.md             # 逐接口示例
@@ -155,7 +156,7 @@ npm run dev            # http://127.0.0.1:5173
 | 订单详情 | `/orders/:id` | `GET /orders/{id}`、支付/收货/取消 |
 | 个人资料 | `/profile` | `GET/PUT /auth/me` |
 | 分类管理 | `/admin/categories` | 分类增删改（管理员） |
-| 商品管理 | `/admin/products` | 商品发布/改价/上下架（管理员） |
+| 商品管理 | `/admin/products` | 商品发布/改价/上下架/主图上传裁剪（管理员） |
 | 订单发货 | `/admin/orders` | `GET /orders?all=true`、`PUT /orders/{id}/shipment` |
 
 未登录访问购物车/订单会跳登录页并记住来源，登录后自动回跳；非管理员访问 `/admin/**`
@@ -217,7 +218,7 @@ ER 图与字段说明见 [功能设计文档 · 第三章](docs/功能设计文�
 ## 已裁剪的功能
 
 收货地址簿、真实支付对接、优惠券/满减/积分、售后退款与物流、商品评价、统计报表、
-秒杀削峰、商品主图上传（商品图仍存 URL，只有用户头像做真实上传）。取舍理由逐条写在
+秒杀削峰。头像与商品主图都做本地上传（落盘 `uploads/`，库里只存 URL），对象存储仍未接入。取舍理由逐条写在
 [功能设计文档 · 需求池表格](docs/功能设计文档.md#12-需求池与取舍)。
 
 ## 许可

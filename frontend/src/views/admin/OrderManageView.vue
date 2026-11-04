@@ -3,15 +3,15 @@
     <el-card shadow="never" class="mb-16">
       <div class="toolbar">
         <el-radio-group v-model="statusFilter" @change="reload(1)">
+          <el-radio-button :value="null">全部</el-radio-button>
           <el-radio-button :value="1">待发货</el-radio-button>
           <el-radio-button :value="0">待付款</el-radio-button>
           <el-radio-button :value="2">待收货</el-radio-button>
           <el-radio-button :value="3">已完成</el-radio-button>
           <el-radio-button :value="4">已取消</el-radio-button>
-          <el-radio-button :value="null">全部</el-radio-button>
         </el-radio-group>
-        <el-button :icon="Refresh" @click="reload()">刷新</el-button>
         <span class="text-muted">共 {{ total }} 笔订单；发货后买家才能确认收货</span>
+        <el-button :icon="Refresh" @click="reload()">刷新</el-button>
       </div>
     </el-card>
 

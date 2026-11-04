@@ -41,3 +41,10 @@ export function updateProduct(id, payload) {
 export function deleteProduct(id) {
   return http.delete(`/products/${id}`)
 }
+
+/** 上传裁剪好的商品主图，返回 { url }。 */
+export function uploadProductImage(blob) {
+  const form = new FormData()
+  form.append('file', blob, 'goods.jpg')
+  return http.post('/products/image', form)
+}

@@ -683,6 +683,52 @@
         }
       }
     },
+    "/api/v1/products/image": {
+      "post": {
+        "tags": [
+          "商品"
+        ],
+        "summary": "上传商品主图（管理员）",
+        "operationId": "upload_product_image_api_v1_products_image_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_product_image_api_v1_products_image_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ProductImageOut_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/products/{product_id}": {
       "get": {
         "tags": [
@@ -1643,6 +1689,35 @@
         "type": "object",
         "title": "ApiResponse[ProductDetailOut]"
       },
+      "ApiResponse_ProductImageOut_": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "业务码，0=成功，非 0 见接口文档错误码表",
+            "default": 0
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "提示信息",
+            "default": "success"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductImageOut"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "业务数据"
+          }
+        },
+        "type": "object",
+        "title": "ApiResponse[ProductImageOut]"
+      },
       "ApiResponse_ProductOut_": {
         "properties": {
           "code": {
@@ -1810,6 +1885,21 @@
           "file"
         ],
         "title": "Body_upload_avatar_api_v1_auth_avatar_post"
+      },
+      "Body_upload_product_image_api_v1_products_image_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "图片文件，multipart/form-data 的 file 字段"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_product_image_api_v1_products_image_post"
       },
       "CartAddRequest": {
         "properties": {
@@ -2919,6 +3009,20 @@
           "status"
         ],
         "title": "ProductDetailOut"
+      },
+      "ProductImageOut": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url",
+            "description": "主图相对地址，可直接填进商品表单的 main_image"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "ProductImageOut"
       },
       "ProductOut": {
         "properties": {

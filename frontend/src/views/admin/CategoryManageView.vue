@@ -3,8 +3,6 @@
     <el-card shadow="never" class="mb-16">
       <div class="toolbar">
         <el-button type="primary" :icon="Plus" @click="openCreate(null)">新建一级分类</el-button>
-        <el-switch v-model="includeHidden" active-text="显示隐藏分类" @change="load" />
-        <span class="text-muted">最多支持两级分类；分类下有商品时不能删除</span>
       </div>
     </el-card>
 
@@ -59,18 +57,6 @@
         <el-form-item label="分类名称" prop="name">
           <el-input v-model="form.name" maxlength="50" placeholder="1-50 位" />
         </el-form-item>
-        <el-form-item label="图标地址">
-          <el-input v-model="form.icon" maxlength="255" placeholder="选填" />
-        </el-form-item>
-        <el-form-item label="排序">
-          <el-input-number v-model="form.sort_order" :min="0" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.status">
-            <el-radio :value="1">显示</el-radio>
-            <el-radio :value="0">隐藏</el-radio>
-          </el-radio-group>
-        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -89,7 +75,6 @@ import { createCategory, deleteCategory, fetchCategoryTree, updateCategory } fro
 
 const tree = ref([])
 const loading = ref(false)
-const includeHidden = ref(true)
 
 const dialogVisible = ref(false)
 const saving = ref(false)
@@ -97,7 +82,7 @@ const formRef = ref()
 const editingId = ref(null)
 const parentName = ref('')
 
-const form = reactive({ name: '', icon: '', sort_order: 0, status: 1, parent_id: null })
+const form = reactive({ name: '', parent_id: null })
 
 const rules = {
   name: [
@@ -113,7 +98,7 @@ const dialogTitle = computed(() =>
 async function load() {
   loading.value = true
   try {
-    tree.value = await fetchCategoryTree(includeHidden.value)
+    tree.value = await fetchCategoryTree(true)
   } catch {
     tree.value = []
   } finally {
@@ -125,9 +110,6 @@ function resetForm(parent = null, row = null) {
   editingId.value = row?.id ?? null
   parentName.value = row ? (row.parent_id ? findName(row.parent_id) : '顶级（一级分类）') : parent ? parent.name : ''
   form.name = row?.name ?? ''
-  form.icon = row?.icon ?? ''
-  form.sort_order = row?.sort_order ?? 0
-  form.status = row?.status ?? 1
   form.parent_id = row ? row.parent_id : parent?.id ?? null
 }
 
@@ -156,11 +138,10 @@ async function onSubmit() {
   saving.value = true
   try {
     if (editingId.value) {
-      const { name, icon, sort_order, status } = form
-      await updateCategory(editingId.value, { name, icon, sort_order, status })
+      await updateCategory(editingId.value, { name: form.name })
       ElMessage.success('分类已更新')
     } else {
-      const payload = { name: form.name, icon: form.icon, sort_order: form.sort_order, status: form.status }
+      const payload = { name: form.name }
       if (form.parent_id) payload.parent_id = form.parent_id
       await createCategory(payload)
       ElMessage.success('分类已创建')

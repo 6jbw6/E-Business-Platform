@@ -52,3 +52,7 @@ class ProductOut(BaseModel):
 
 class ProductDetailOut(ProductOut):
     detail: str | None = Field(default="", description="图文详情")
+
+
+class ProductImageOut(BaseModel):
+    url: str = Field(description="主图相对地址，可直接填进商品表单的 main_image")

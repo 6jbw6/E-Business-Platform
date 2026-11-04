@@ -5,7 +5,7 @@ from fastapi import APIRouter, File, UploadFile, status
 from backend.app.core.config import settings
 from backend.app.core.deps import CurrentUser, DbSession
 from backend.app.core.security import create_access_token
-from backend.app.core.storage import delete_avatar, save_avatar
+from backend.app.core.storage import AVATAR_SUBDIR, delete_image, save_image
 from backend.app.crud import user as crud_user
 from backend.app.schemas.common import ApiResponse
 from backend.app.schemas.user import (
@@ -72,8 +72,8 @@ async def upload_avatar(
 ):
     data = await file.read()
     old_avatar = user.avatar
-    url = save_avatar(user.id, data)
+    url = save_image(AVATAR_SUBDIR, str(user.id), data)
     updated = crud_user.update_profile(db, user, avatar=url)
     # 换成功后再删旧文件，避免上传失败时把用户原有头像弄丢
-    delete_avatar(old_avatar)
+    delete_image(AVATAR_SUBDIR, old_avatar)
     return ApiResponse(data=UserOut.model_validate(updated), message="头像已更新")

@@ -37,10 +37,10 @@ class Settings(BaseSettings):
     # 首次启动时自动建表并播种演示数据；生产部署建议关掉，改用 sql/*.sql
     auto_init_db: bool = False
 
-    # 头像上传：相对路径按项目根目录解析
+    # 图片上传：相对路径按项目根目录解析
     upload_dir: str = "uploads"
     upload_url_prefix: str = "/uploads"
-    max_avatar_bytes: int = 2 * 1024 * 1024
+    max_upload_bytes: int = 2 * 1024 * 1024
 
     @property
     def sqlalchemy_uri(self) -> str:

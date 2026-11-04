@@ -2,15 +2,17 @@
 
 from decimal import Decimal
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, File, Query, UploadFile, status
 
 from backend.app.core.deps import CurrentAdmin, DbSession
+from backend.app.core.storage import GOODS_SUBDIR, save_image
 from backend.app.crud import product as crud
 from backend.app.models.product import STATUS_ON_SALE
 from backend.app.schemas.common import ApiResponse, PageData, make_page
 from backend.app.schemas.product import (
     ProductCreateRequest,
     ProductDetailOut,
+    ProductImageOut,
     ProductOut,
     ProductUpdateRequest,
 )
@@ -48,6 +50,20 @@ def read_products(
     )
     items = [_brief(p, name) for p, name in rows]
     return ApiResponse(data=make_page(items, total, page, page_size))
+
+
+@router.post(
+    "/image",
+    response_model=ApiResponse[ProductImageOut],
+    summary="上传商品主图（管理员）",
+)
+async def upload_product_image(
+    _: CurrentAdmin,
+    file: UploadFile = File(..., description="图片文件，multipart/form-data 的 file 字段"),
+):
+    data = await file.read()
+    url = save_image(GOODS_SUBDIR, "goods", data)
+    return ApiResponse(data=ProductImageOut(url=url), message="主图已上传")
 
 
 @router.get("/{product_id}", response_model=ApiResponse[ProductDetailOut], summary="商品详情")
