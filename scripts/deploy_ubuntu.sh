@@ -42,9 +42,16 @@ else
     echo "    要页面的话，在本地 cd frontend && npm run build，再把 frontend/dist 整个目录传到服务器项目里"
 fi
 
-echo "==> 停掉占用 $PORT 的旧进程"
-pkill -f "uvicorn backend.app.main:app --port $PORT" 2>/dev/null || true
-sleep 1
+echo "==> 停掉本项目占用 $PORT 的旧进程"
+# 不能整条命令行匹配：真实命令里 --host 夹在 app 与 --port 之间，换个写法就会漏杀，
+# 漏杀的后果是新进程绑不上端口自己退出，而健康检查会被旧进程答到，看起来像部署成功
+for pid in $(pgrep -f "uvicorn backend\.app\.main:app" || true); do
+    if tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -q -- "--port $PORT"; then
+        echo "    停止旧进程 $pid"
+        kill "$pid" 2>/dev/null || true
+    fi
+done
+sleep 2
 
 echo "==> 后台启动 uvicorn"
 mkdir -p logs
@@ -53,8 +60,16 @@ nohup .venv/bin/uvicorn backend.app.main:app \
     --port "$PORT" \
     --workers 1 \
     >> logs/uvicorn.log 2>&1 &
+NEW_PID=$!
 
 sleep 3
+if ! kill -0 "$NEW_PID" 2>/dev/null; then
+    echo "==> 新进程 $NEW_PID 没起来，多半是 $PORT 仍被占用，日志末尾：" >&2
+    tail -n 20 logs/uvicorn.log >&2
+    exit 1
+fi
+echo "==> 新进程 $NEW_PID 已启动"
+
 if ! curl -fsS "http://127.0.0.1:$PORT/health" >/dev/null; then
     echo "==> 健康检查失败，请查看日志：tail -n 50 $APP_DIR/logs/uvicorn.log" >&2
     exit 1
